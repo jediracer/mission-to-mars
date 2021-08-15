@@ -20,7 +20,8 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "last_modified": dt.datetime.now()
+        "last_modified": dt.datetime.now(),
+        "hemispheres": mars_hemispheres(browser)
     }
 
     # Stop webdriver and return data
@@ -53,6 +54,46 @@ def mars_news(browser):
         return None, None
 
     return news_title, news_p
+
+def mars_hemispheres(browser):
+    # Use browser to visit the URL 
+    url = 'https://marshemispheres.com/'
+    browser.visit(url)
+
+    # Create a list to hold the images and titles.
+    hemisphere_image_urls = []
+
+    # Retrieve the image urls and titles for each hemisphere.
+    html = browser.html
+    img_soup = soup(html, 'html.parser')
+    results = img_soup.find_all('div', class_="item")
+    for result in results:
+        try:
+            # get title
+            title = result.find('h3').text
+            
+            # get image url
+            hemisphere_url = result.a['href']
+            full_hemisphere_url = url + hemisphere_url
+
+            # navigate to hemishpere page
+            browser.visit(full_hemisphere_url)
+
+            # get image url
+            img_html = browser.html
+            full_img_soup = soup(img_html, 'html.parser')
+            img_result = full_img_soup.find('div', class_='downloads')
+            img_url = img_result.a['href']
+            full_img_url = url + img_url
+
+            # store image url and title in dictionary and append to list
+            url_title = {'img_url':full_img_url, 'title':title}
+            hemisphere_image_urls.append(url_title)
+
+        except Exception as e:
+            print(e)
+    
+    return(hemisphere_image_urls)
 
 # ### Featured Image
 def featured_image(browser):
@@ -97,8 +138,8 @@ def mars_facts():
     df.set_index('Description', inplace=True)
 
     # convert df back to html
-    return df.to_html(classes="table table-striped")
-
+    # return df.to_html(classes="table table-striped")
+    return df.to_html(classes='dfstyle')
 if __name__ == "__main__":
     # If running as script, print scraped data
     print(scrape_all())
