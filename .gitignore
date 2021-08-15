@@ -1,3 +1,5 @@
 # files for git to ignore
 Practice.ipynb
 index.html
+# folders for git to ignore
+/__pycache__
